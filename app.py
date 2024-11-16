@@ -31,14 +31,14 @@ def reactive_calc_combined():
 sidebar = ui.sidebar(
     ui.h2("Antarctic Explorer", class_="text-center"),
     ui.p(
-        "A demonstration of real-time temperature readings in Antarctica in either Celsius or Fahrenheit.",
+        "A demonstration of real-time temperature readings in Antarctica in Celsius, Fahrenheit, or Kelvin.",
         class_="text-center",
     ),
-    # Use input_radio_buttons for temperature unit selection
+    # Use input_radio_buttons for temperature unit selection, adding Kelvin as an option
     ui.input_radio_buttons(
         id="temp_unit",
         label="Select Temperature Unit:",
-        choices=["Celsius", "Fahrenheit"],
+        choices=["Celsius", "Fahrenheit", "Kelvin"],
         selected="Celsius",
     ),
 )
@@ -76,6 +76,9 @@ def server(input, output, session):
         if input.temp_unit() == "Fahrenheit":
             temp_fahrenheit = round((temp_celsius * 9 / 5) + 32, 1)
             return f"{temp_fahrenheit} °F"
+        elif input.temp_unit() == "Kelvin":
+            temp_kelvin = round(temp_celsius + 273.15, 1)
+            return f"{temp_kelvin} K"
         else:
             return f"{temp_celsius} °C"
 
