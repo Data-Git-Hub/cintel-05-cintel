@@ -69,7 +69,7 @@ font_awesome_css = ui.tags.head(
             margin-top: 10px;
         }
         """
-    ),
+    )
 )
 
 # Create the sidebar using ui.sidebar()
@@ -194,6 +194,34 @@ def server(input, output, session):
 
     @output
     @render.ui
+    def temp_message():
+        """Return a message with an icon based on the current temperature."""
+        _, _, latest_dictionary_entry = reactive_calc_combined()
+        temp_celsius = latest_dictionary_entry["temp"]
+
+        if temp_celsius > -17:
+            # Micro Heatwave with red sun icon
+            return ui.HTML(
+                f"""
+                <div class="message-container">
+                    <span>Micro Heatwave</span>
+                    <i class="fa-regular fa-sun message-icon" style="color: red;"></i>
+                </div>
+                """
+            )
+        else:
+            # Could be Warmer with blue snowflake icon
+            return ui.HTML(
+                f"""
+                <div class="message-container">
+                    <span>Could be Warmer</span>
+                    <i class="fa-solid fa-snowflake message-icon" style="color: blue;"></i>
+                </div>
+                """
+            )
+
+    @output
+    @render.ui
     def display_plot():
         """Render the current trend of temperature readings."""
         _, df, _ = reactive_calc_combined()
@@ -201,9 +229,7 @@ def server(input, output, session):
         # Ensure the DataFrame is not empty before plotting
         if not df.empty:
             # Convert the 'timestamp' column to datetime for better plotting
-            df["timestamp"] = pd.to_datetime(
-                df["timestamp"], format="%d-%m-%Y %H:%M:%S"
-            )
+            df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M:%S")
 
             # Create scatter plot for readings
             fig = px.scatter(
