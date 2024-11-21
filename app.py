@@ -41,6 +41,13 @@ sidebar = ui.sidebar(
         choices=["Celsius", "Fahrenheit", "Kelvin"],
         selected="Celsius",
     ),
+    # Add a dropdown box (select input) for locations
+    ui.input_select(
+        id="location",
+        label="Select Location:",
+        choices=["Palmer Station", "Port Lockroy", "Yelcho Base"],
+        selected="Palmer Station",
+    ),
 )
 
 # Define the full page layout correctly
@@ -57,6 +64,10 @@ app_ui = ui.page_sidebar(
     ui.hr(),
     ui.h2("Current Date and Time"),
     ui.output_text("display_time"),
+    # Display the selected location
+    ui.hr(),
+    ui.h2("Selected Location"),
+    ui.output_text("display_location"),
 )
 
 # ------------------------------------------------
@@ -88,6 +99,12 @@ def server(input, output, session):
         """Get the latest reading and return a timestamp string"""
         latest_dictionary_entry = reactive_calc_combined()
         return f"{latest_dictionary_entry['timestamp']}"
+
+    @output
+    @render.text
+    def display_location():
+        """Display the selected location"""
+        return f"Currently viewing: {input.location()}"
 
 
 # ------------------------------------------------
