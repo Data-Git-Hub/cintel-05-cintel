@@ -53,11 +53,10 @@ font_awesome_css = ui.tags.head(
         """
         .location-container, .message-container {
             display: flex;
-            justify-content: space-between;
             align-items: center;
         }
         .location-icon, .message-icon {
-            margin-left: 10px;
+            margin-left: 8px;
         }
         .temperature-box {
             background: linear-gradient(to right, #d3d3d3, #808080); /* Gradient grey */
@@ -160,7 +159,7 @@ def server(input, output, session):
     @output
     @render.ui
     def display_location_with_icon():
-        """Display the selected location with a right-justified icon."""
+        """Display the selected location with a right-aligned icon."""
         location = input.location()
         if location == "Palmer Station":
             return ui.HTML(
