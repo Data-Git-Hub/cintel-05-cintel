@@ -26,8 +26,17 @@ def reactive_calc_combined():
 # Define the Shiny UI Layout Using page_sidebar()
 # ------------------------------------------------
 
+# Add Font Awesome CSS to the app
+font_awesome_css = ui.tags.head(
+    ui.tags.link(
+        rel="stylesheet",
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css",
+    )
+)
+
 # Create the sidebar using ui.sidebar()
 sidebar = ui.sidebar(
+    font_awesome_css,  # Include Font Awesome CSS
     ui.h2("Antarctic Explorer", class_="text-center"),
     ui.p(
         "A demonstration of real-time temperature readings in Antarctica in Celsius, Fahrenheit, or Kelvin.",
@@ -62,7 +71,7 @@ app_ui = ui.page_sidebar(
         ui.value_box(
             theme="bg-gradient-blue-purple",
             title="Location",
-            value=ui.output_text("display_location"),  # Selected location
+            value=ui.output_ui("display_location_with_icon"),  # Updated to handle HTML
         )
     ),
     ui.hr(),
@@ -102,10 +111,26 @@ def server(input, output, session):
         return f"{latest_dictionary_entry['timestamp']}"
 
     @output
-    @render.text
-    def display_location():
-        """Display the selected location"""
-        return f"{input.location()}"
+    @render.ui
+    def display_location_with_icon():
+        """Display the selected location with an icon."""
+        location = input.location()
+        if location == "Palmer Station":
+            # Use proper Font Awesome HTML with white styling
+            return ui.HTML(
+                f"{location} <i class='fa-solid fa-flag-usa' style='color: white;'></i>"
+            )
+        elif location == "Port Lockroy":
+            # Add Font Awesome icon for Port Lockroy
+            return ui.HTML(
+                f"{location} <i class='fa-solid fa-flag-checkered' style='color: white;'></i>"
+            )
+        elif location == "Yelcho Base":
+            # Add Font Awesome icon for Yelcho Base
+            return ui.HTML(
+                f"{location} <i class='fa-regular fa-flag' style='color: white;'></i>"
+            )
+        return ui.HTML(location)
 
     @output
     @render.text
@@ -125,4 +150,3 @@ def server(input, output, session):
 # ------------------------------------------------
 
 app = App(app_ui, server)
-
