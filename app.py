@@ -34,6 +34,13 @@ sidebar = ui.sidebar(
         "A demonstration of real-time temperature readings in Antarctica in Celsius, Fahrenheit, or Kelvin.",
         class_="text-center",
     ),
+    # Add the drop-down box (select input) for locations above the radio buttons
+    ui.input_select(
+        id="location",
+        label="Select Location:",
+        choices=["Palmer Station", "Port Lockroy", "Yelcho Base"],
+        selected="Palmer Station",
+    ),
     # Use input_radio_buttons for temperature unit selection, adding Kelvin as an option
     ui.input_radio_buttons(
         id="temp_unit",
@@ -41,13 +48,10 @@ sidebar = ui.sidebar(
         choices=["Celsius", "Fahrenheit", "Kelvin"],
         selected="Celsius",
     ),
-    # Add a dropdown box (select input) for locations
-    ui.input_select(
-        id="location",
-        label="Select Location:",
-        choices=["Palmer Station", "Port Lockroy", "Yelcho Base"],
-        selected="Palmer Station",
-    ),
+    # Add Current Date and Time in the sidebar
+    ui.hr(),
+    ui.h3("Current Date and Time"),
+    ui.output_text("display_time"),
 )
 
 # Define the full page layout correctly
@@ -62,10 +66,7 @@ app_ui = ui.page_sidebar(
         f'<span style="color: #1E90FF;">{icon_svg("water", style="solid")}</span>'
     ),
     ui.hr(),
-    ui.h2("Current Date and Time"),
-    ui.output_text("display_time"),
-    # Display the selected location
-    ui.hr(),
+    # Remove Date and Time from the main page
     ui.h2("Selected Location"),
     ui.output_text("display_location"),
 )
