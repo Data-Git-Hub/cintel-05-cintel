@@ -57,18 +57,13 @@ sidebar = ui.sidebar(
 # Define the full page layout correctly
 app_ui = ui.page_sidebar(
     sidebar,
-    ui.h2("Current Temperature"),
-    ui.output_text("display_temp"),
-    ui.p("Could be warmer"),
-    # Display poo-storm icon in brown and water icon in blue
-    ui.HTML(
-        f'<span style="color: #8B4513;">{icon_svg("poo-storm", style="solid")}</span> '
-        f'<span style="color: #1E90FF;">{icon_svg("water", style="solid")}</span>'
-    ),
-    ui.hr(),
-    # Remove Date and Time from the main page
+    # Display Selected Location above Current Temperature
     ui.h2("Selected Location"),
     ui.output_text("display_location"),
+    ui.hr(),
+    ui.h2("Current Temperature"),
+    ui.output_text("display_temp"),
+    ui.output_text("temp_message"),  # Add the conditional message here
 )
 
 # ------------------------------------------------
@@ -106,6 +101,18 @@ def server(input, output, session):
     def display_location():
         """Display the selected location"""
         return f"Currently viewing: {input.location()}"
+
+    @output
+    @render.text
+    def temp_message():
+        """Return a message based on the current temperature."""
+        latest_dictionary_entry = reactive_calc_combined()
+        temp_celsius = latest_dictionary_entry["temp"]
+
+        if temp_celsius > -17:
+            return "Micro Heatwave"
+        else:
+            return "Could be Warmer"
 
 
 # ------------------------------------------------
