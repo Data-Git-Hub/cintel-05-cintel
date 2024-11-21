@@ -69,7 +69,7 @@ font_awesome_css = ui.tags.head(
             margin-top: 10px;
         }
         """
-    )
+    ),
 )
 
 # Create the sidebar using ui.sidebar()
@@ -103,8 +103,7 @@ sidebar = ui.sidebar(
 # Define the full page layout correctly
 app_ui = ui.page_sidebar(
     sidebar,
-    # Display Selected Location in a value box above Current Temperature
-    ui.h2("Selected Location"),
+    # Display the selected location directly in the value box
     ui.layout_columns(
         ui.value_box(
             theme="bg-gradient-blue-purple",
@@ -113,9 +112,9 @@ app_ui = ui.page_sidebar(
         )
     ),
     ui.hr(),
-    ui.h2("Current Temperature"),
     # Add the temperature in a custom-styled div with a gradient grey background
     ui.div(
+        ui.HTML("<strong>Current Temperature:</strong>"),
         ui.output_text("display_temp"),  # Temperature value
         class_="temperature-box",  # Gradient grey styling
     ),
@@ -229,7 +228,9 @@ def server(input, output, session):
         # Ensure the DataFrame is not empty before plotting
         if not df.empty:
             # Convert the 'timestamp' column to datetime for better plotting
-            df["timestamp"] = pd.to_datetime(df["timestamp"], format="%d-%m-%Y %H:%M:%S")
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"], format="%d-%m-%Y %H:%M:%S"
+            )
 
             # Create scatter plot for readings
             fig = px.scatter(
