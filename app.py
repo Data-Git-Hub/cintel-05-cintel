@@ -71,6 +71,15 @@ font_awesome_css = ui.tags.head(
             font-size: 1.2em; /* Smaller icon size */
             margin-left: 5px;
         }
+        .datetime-box {
+            background: linear-gradient(to right, #98fb98, #228b22); /* Green gradient */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+            margin-top: 10px;
+        }
         """
     ),
 )
@@ -97,10 +106,14 @@ sidebar = ui.sidebar(
         choices=["Celsius", "Fahrenheit", "Kelvin"],
         selected="Celsius",
     ),
-    # Add Current Date and Time in the sidebar
-    ui.hr(),
-    ui.h3("Current Date and Time"),
-    ui.output_text("display_time"),
+    # Add Current Date and Time in a green gradient box
+    ui.div(
+        [
+            ui.div("Current Date and Time", class_="text-bold"),  # Header text
+            ui.output_text("display_time"),  # Reactive timestamp
+        ],
+        class_="datetime-box",
+    ),
 )
 
 # Define the full page layout correctly
@@ -212,7 +225,7 @@ def server(input, output, session):
             return ui.HTML(
                 f"""
                 <div class="message-container">
-                    <span>Micro Heatwave</span>
+                    <span>Micro Heatwave  </span>
                     <i class="fa-regular fa-sun message-icon" style="color: red;"></i>
                 </div>
                 """
@@ -222,7 +235,7 @@ def server(input, output, session):
             return ui.HTML(
                 f"""
                 <div class="message-container">
-                    <span>Could be Warmer</span>
+                    <span>Could be Warmer  </span>
                     <i class="fa-solid fa-snowflake message-icon" style="color: blue;"></i>
                 </div>
                 """
