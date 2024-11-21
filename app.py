@@ -5,6 +5,10 @@
 from shiny import App, ui, reactive, render
 import random
 from datetime import datetime
+import pandas as pd
+from plotly import express as px
+from scipy.stats import linregress
+from collections import deque
 
 # --------------------------------------------
 # SET UP THE REACTIVE CONTENT
@@ -12,14 +16,27 @@ from datetime import datetime
 
 UPDATE_INTERVAL_SECS: int = 1
 
+# Simulated deque for storing data and a DataFrame for plotting
+MAX_DEQUE_LENGTH = 100  # Store up to 100 entries
+temp_deque = deque(maxlen=MAX_DEQUE_LENGTH)
+
 
 @reactive.calc()
 def reactive_calc_combined():
+    # Simulate temperature and time
     reactive.invalidate_later(UPDATE_INTERVAL_SECS)
     temp = round(random.uniform(-18, -16), 1)
     timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    # Add the new data to the deque
+    temp_deque.append({"temp": temp, "timestamp": timestamp})
+
+    # Convert to DataFrame for plotting
+    df = pd.DataFrame(temp_deque)
+
+    # Latest dictionary entry
     latest_dictionary_entry = {"temp": temp, "timestamp": timestamp}
-    return latest_dictionary_entry
+    return temp_deque, df, latest_dictionary_entry
 
 
 # ------------------------------------------------
@@ -104,6 +121,11 @@ app_ui = ui.page_sidebar(
     ),
     # Add the conditional message with right-aligned icons
     ui.output_ui("temp_message"),  # Updated to handle HTML with icons
+    # Add the card with the temperature chart
+    ui.card(
+        ui.card_header("Chart with Current Trend"),
+        ui.output_ui("display_plot"),  # Plotly chart as HTML
+    ),
 )
 
 # ------------------------------------------------
@@ -116,7 +138,7 @@ def server(input, output, session):
     @render.text
     def display_temp():
         """Get the latest reading and return a temperature string"""
-        latest_dictionary_entry = reactive_calc_combined()
+        _, _, latest_dictionary_entry = reactive_calc_combined()
         temp_celsius = latest_dictionary_entry["temp"]
 
         # Check the radio button value to determine the unit
@@ -133,7 +155,7 @@ def server(input, output, session):
     @render.text
     def display_time():
         """Get the latest reading and return a timestamp string"""
-        latest_dictionary_entry = reactive_calc_combined()
+        _, _, latest_dictionary_entry = reactive_calc_combined()
         return f"{latest_dictionary_entry['timestamp']}"
 
     @output
@@ -172,31 +194,48 @@ def server(input, output, session):
 
     @output
     @render.ui
-    def temp_message():
-        """Return a message with an icon based on the current temperature."""
-        latest_dictionary_entry = reactive_calc_combined()
-        temp_celsius = latest_dictionary_entry["temp"]
+    def display_plot():
+        """Render the current trend of temperature readings."""
+        _, df, _ = reactive_calc_combined()
 
-        if temp_celsius > -17:
-            # Micro Heatwave with red sun icon
-            return ui.HTML(
-                f"""
-                <div class="message-container">
-                    <span>Micro Heatwave</span>
-                    <i class="fa-regular fa-sun message-icon" style="color: red;"></i>
-                </div>
-                """
+        # Ensure the DataFrame is not empty before plotting
+        if not df.empty:
+            # Convert the 'timestamp' column to datetime for better plotting
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"], format="%d-%m-%Y %H:%M:%S"
             )
-        else:
-            # Could be Warmer with blue snowflake icon
-            return ui.HTML(
-                f"""
-                <div class="message-container">
-                    <span>Could be Warmer</span>
-                    <i class="fa-solid fa-snowflake message-icon" style="color: blue;"></i>
-                </div>
-                """
+
+            # Create scatter plot for readings
+            fig = px.scatter(
+                df,
+                x="timestamp",
+                y="temp",
+                title="Temperature Readings with Regression Line",
+                labels={"temp": "Temperature (°C)", "timestamp": "Time"},
+                color_discrete_sequence=["blue"],
             )
+
+            # Linear regression - generate regression line
+            x_vals = range(len(df))
+            y_vals = df["temp"]
+            slope, intercept, _, _, _ = linregress(x_vals, y_vals)
+            df["best_fit_line"] = [slope * x + intercept for x in x_vals]
+
+            # Add the regression line to the figure
+            fig.add_scatter(
+                x=df["timestamp"],
+                y=df["best_fit_line"],
+                mode="lines",
+                name="Regression Line",
+            )
+
+            # Update layout for better visualization
+            fig.update_layout(xaxis_title="Time", yaxis_title="Temperature (°C)")
+
+            # Return the Plotly figure as HTML
+            return ui.HTML(fig.to_html(full_html=False))
+
+        return ui.HTML("<div>No data available for plotting.</div>")
 
 
 # ------------------------------------------------
