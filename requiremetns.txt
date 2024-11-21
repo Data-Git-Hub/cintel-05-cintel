@@ -1,2 +1,6 @@
 faicons
 shiny
+shiny
+pandas
+plotly
+scipy
