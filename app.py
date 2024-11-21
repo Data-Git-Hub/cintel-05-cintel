@@ -5,7 +5,6 @@
 from shiny import App, ui, reactive, render
 import random
 from datetime import datetime
-from faicons import icon_svg
 
 # --------------------------------------------
 # SET UP THE REACTIVE CONTENT
@@ -57,9 +56,15 @@ sidebar = ui.sidebar(
 # Define the full page layout correctly
 app_ui = ui.page_sidebar(
     sidebar,
-    # Display Selected Location above Current Temperature
+    # Display Selected Location in a value box above Current Temperature
     ui.h2("Selected Location"),
-    ui.output_text("display_location"),
+    ui.layout_columns(
+        ui.value_box(
+            theme="bg-gradient-blue-purple",
+            title="Location",
+            value=ui.output_text("display_location"),  # Selected location
+        )
+    ),
     ui.hr(),
     ui.h2("Current Temperature"),
     ui.output_text("display_temp"),
@@ -100,7 +105,7 @@ def server(input, output, session):
     @render.text
     def display_location():
         """Display the selected location"""
-        return f"Currently viewing: {input.location()}"
+        return f"{input.location()}"
 
     @output
     @render.text
@@ -120,3 +125,4 @@ def server(input, output, session):
 # ------------------------------------------------
 
 app = App(app_ui, server)
+
