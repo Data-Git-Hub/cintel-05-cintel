@@ -65,7 +65,6 @@ font_awesome_css = ui.tags.head(
             border-radius: 8px;
             font-size: 1.5em;
             text-align: center;
-            margin-top: 10px;
         }
         """
     ),
@@ -102,23 +101,26 @@ sidebar = ui.sidebar(
 # Define the full page layout correctly
 app_ui = ui.page_sidebar(
     sidebar,
-    # Display the selected location directly in the value box
+    # Place Location and Current Temperature side by side
     ui.layout_columns(
         ui.value_box(
-            theme="bg-gradient-blue-purple",
             title="Location",
             value=ui.output_ui("display_location_with_icon"),  # Updated to handle HTML
-        )
+            theme="bg-gradient-blue-purple",
+        ),
+        ui.value_box(
+            title="Current Temperature",
+            value=ui.div(
+                [
+                    ui.output_text("display_temp"),  # Temperature value
+                    ui.output_ui("temp_message"),  # Conditional icon message
+                ],
+                class_="temperature-box",  # Gradient gray styling
+            ),
+            theme=None,  # No default theme, custom gradient will apply
+        ),
     ),
     ui.hr(),
-    # Add the temperature in a custom-styled div with a gradient grey background
-    ui.div(
-        ui.HTML("<strong>Current Temperature:</strong>"),
-        ui.output_text("display_temp"),  # Temperature value
-        class_="temperature-box",  # Gradient grey styling
-    ),
-    # Add the conditional message with right-aligned icons
-    ui.output_ui("temp_message"),  # Updated to handle HTML with icons
     # Add the card with the temperature chart
     ui.card(
         ui.card_header("Chart with Current Trend"),
@@ -202,8 +204,7 @@ def server(input, output, session):
             return ui.HTML(
                 f"""
                 <div class="message-container">
-                    <span>Micro Heatwave</span>
-                    <i class="fa-regular fa-sun message-icon" style="color: red;"></i>
+                    <i class="fa-regular fa-sun message-icon" style="color: red; font-size: 2em;"></i>
                 </div>
                 """
             )
@@ -212,8 +213,7 @@ def server(input, output, session):
             return ui.HTML(
                 f"""
                 <div class="message-container">
-                    <span>Could be Warmer</span>
-                    <i class="fa-solid fa-snowflake message-icon" style="color: blue;"></i>
+                    <i class="fa-solid fa-snowflake message-icon" style="color: blue; font-size: 2em;"></i>
                 </div>
                 """
             )
@@ -231,13 +231,26 @@ def server(input, output, session):
                 df["timestamp"], format="%d-%m-%Y %H:%M:%S"
             )
 
+            # Check the selected temperature unit
+            temp_unit = input.temp_unit()
+
+            # Adjust the temperatures based on the selected unit
+            if temp_unit == "Fahrenheit":
+                df["temp"] = df["temp"] * 9 / 5 + 32
+                y_label = "Temperature (°F)"
+            elif temp_unit == "Kelvin":
+                df["temp"] = df["temp"] + 273.15
+                y_label = "Temperature (K)"
+            else:
+                y_label = "Temperature (°C)"
+
             # Create scatter plot for readings
             fig = px.scatter(
                 df,
                 x="timestamp",
                 y="temp",
                 title="Temperature Readings with Regression Line",
-                labels={"temp": "Temperature (°C)", "timestamp": "Time"},
+                labels={"temp": y_label, "timestamp": "Time"},
                 color_discrete_sequence=["blue"],
             )
 
@@ -256,7 +269,7 @@ def server(input, output, session):
             )
 
             # Update layout for better visualization
-            fig.update_layout(xaxis_title="Time", yaxis_title="Temperature (°C)")
+            fig.update_layout(xaxis_title="Time", yaxis_title=y_label)
 
             # Return the Plotly figure as HTML
             return ui.HTML(fig.to_html(full_html=False))
