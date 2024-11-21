@@ -31,12 +31,33 @@ font_awesome_css = ui.tags.head(
     ui.tags.link(
         rel="stylesheet",
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css",
-    )
+    ),
+    ui.tags.style(
+        """
+        .location-container, .message-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .location-icon, .message-icon {
+            margin-left: 10px;
+        }
+        .temperature-box {
+            background: linear-gradient(to right, #d3d3d3, #808080); /* Gradient grey */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            text-align: center;
+            margin-top: 10px;
+        }
+        """
+    ),
 )
 
 # Create the sidebar using ui.sidebar()
 sidebar = ui.sidebar(
-    font_awesome_css,  # Include Font Awesome CSS
+    font_awesome_css,  # Include Font Awesome CSS and custom styling
     ui.h2("Antarctic Explorer", class_="text-center"),
     ui.p(
         "A demonstration of real-time temperature readings in Antarctica in Celsius, Fahrenheit, or Kelvin.",
@@ -76,8 +97,13 @@ app_ui = ui.page_sidebar(
     ),
     ui.hr(),
     ui.h2("Current Temperature"),
-    ui.output_text("display_temp"),
-    ui.output_text("temp_message"),  # Add the conditional message here
+    # Add the temperature in a custom-styled div with a gradient grey background
+    ui.div(
+        ui.output_text("display_temp"),  # Temperature value
+        class_="temperature-box",  # Gradient grey styling
+    ),
+    # Add the conditional message with right-aligned icons
+    ui.output_ui("temp_message"),  # Updated to handle HTML with icons
 )
 
 # ------------------------------------------------
@@ -113,36 +139,64 @@ def server(input, output, session):
     @output
     @render.ui
     def display_location_with_icon():
-        """Display the selected location with an icon."""
+        """Display the selected location with a right-justified icon."""
         location = input.location()
         if location == "Palmer Station":
-            # Use proper Font Awesome HTML with white styling
             return ui.HTML(
-                f"{location} <i class='fa-solid fa-flag-usa' style='color: white;'></i>"
+                f"""
+                <div class="location-container">
+                    <span>{location}</span>
+                    <i class="fa-solid fa-flag-usa location-icon" style="color: white;"></i>
+                </div>
+                """
             )
         elif location == "Port Lockroy":
-            # Add Font Awesome icon for Port Lockroy
             return ui.HTML(
-                f"{location} <i class='fa-solid fa-flag-checkered' style='color: white;'></i>"
+                f"""
+                <div class="location-container">
+                    <span>{location}</span>
+                    <i class="fa-solid fa-flag-checkered location-icon" style="color: white;"></i>
+                </div>
+                """
             )
         elif location == "Yelcho Base":
-            # Add Font Awesome icon for Yelcho Base
             return ui.HTML(
-                f"{location} <i class='fa-regular fa-flag' style='color: white;'></i>"
+                f"""
+                <div class="location-container">
+                    <span>{location}</span>
+                    <i class="fa-regular fa-flag location-icon" style="color: white;"></i>
+                </div>
+                """
             )
         return ui.HTML(location)
 
     @output
-    @render.text
+    @render.ui
     def temp_message():
-        """Return a message based on the current temperature."""
+        """Return a message with an icon based on the current temperature."""
         latest_dictionary_entry = reactive_calc_combined()
         temp_celsius = latest_dictionary_entry["temp"]
 
         if temp_celsius > -17:
-            return "Micro Heatwave"
+            # Micro Heatwave with red sun icon
+            return ui.HTML(
+                f"""
+                <div class="message-container">
+                    <span>Micro Heatwave</span>
+                    <i class="fa-regular fa-sun message-icon" style="color: red;"></i>
+                </div>
+                """
+            )
         else:
-            return "Could be Warmer"
+            # Could be Warmer with blue snowflake icon
+            return ui.HTML(
+                f"""
+                <div class="message-container">
+                    <span>Could be Warmer</span>
+                    <i class="fa-solid fa-snowflake message-icon" style="color: blue;"></i>
+                </div>
+                """
+            )
 
 
 # ------------------------------------------------
